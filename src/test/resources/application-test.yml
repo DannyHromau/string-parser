@@ -1,4 +1,4 @@
 host: http://localhost:
 lettersMapping: /api/v1/letters
 countMapping: /count
-length_max: 2147483640
+length_max: 10

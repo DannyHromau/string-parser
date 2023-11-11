@@ -1,17 +1,21 @@
 package com.dannyhromau.parser;
 
+import com.dannyhromau.parser.api.dto.ErrorMessageDto;
+import com.dannyhromau.parser.service.LettersService;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static io.restassured.RestAssured.given;
 
-@SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-test.yml")
 public class LettersRestServiceTest {
 
@@ -25,6 +29,8 @@ public class LettersRestServiceTest {
     private String countMapping;
     @Value("${length_max}")
     private int stringLengthMax;
+    @Autowired
+    private LettersService lettersService;
 
 
     @Test
@@ -83,17 +89,13 @@ public class LettersRestServiceTest {
     }
 
     @Test
-    void check_when_string_length_equals_max_test() {
+    void check_when_string_length_more_than_max_test() {
         StringBuilder buffer1 = new StringBuilder();
-        StringBuilder buffer2 = new StringBuilder();
-        for (int i = 0; i < stringLengthMax / 2; i++) {
+        ReflectionTestUtils.setField(lettersService, "maxInputLength", stringLengthMax);
+        for (int i = 0; i <= stringLengthMax; i++) {
             buffer1.append('a');
         }
-        for (int i = 0; i < stringLengthMax / 2; i++) {
-            buffer2.append('a');
-        }
-        buffer1.append(buffer2);
-        String expectedResult = "\"a\": " + stringLengthMax;
+        ErrorMessageDto expectedResult = new ErrorMessageDto("Input length is too long");
         Response response = given()
                 .port(port)
                 .when()
@@ -104,8 +106,8 @@ public class LettersRestServiceTest {
                 .log()
                 .all()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(400)
                 .extract().response();
-        Assertions.assertEquals(expectedResult, response.asString());
+        Assertions.assertEquals(expectedResult.getMessage(), response.body().jsonPath().getString("message"));
     }
 }

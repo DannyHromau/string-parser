@@ -17,6 +17,8 @@ public class LettersServiceImpl implements LettersService {
     private int minInputLength;
     @Value("${string_length.max}")
     private int maxInputLength;
+    private static final String TOO_LONG_DATA_MESSAGE = ErrorMessages.TOO_LONG_DATA_MESSAGE.label;
+    private static final String TOO_SHORT_DATA_MESSAGE = ErrorMessages.TOO_SHORT_DATA_MESSAGE.label;
 
     @Override
     public String count(String inputString) {
@@ -41,10 +43,10 @@ public class LettersServiceImpl implements LettersService {
 
     void checkInputValidity(String input) {
         if (input.length() < minInputLength) {
-            throw new InvalidInputDataException(ErrorMessages.TOO_SHORT_DATA_MESSAGE.label);
+            throw new InvalidInputDataException(TOO_SHORT_DATA_MESSAGE);
         }
         if (input.length() > maxInputLength) {
-            throw new InvalidInputDataException(ErrorMessages.TOO_LONG_DATA_MESSAGE.label);
+            throw new InvalidInputDataException(TOO_LONG_DATA_MESSAGE);
         }
     }
 }
